@@ -6,6 +6,7 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - Robust error handling for 401/404/422.
 - Pagination behaves deterministically (no overlap between pages; invalid page falls back to page 1 item set).
 - Basic boundary checks (e.g., minimal name length).
+- Error message quality is clear and specific (not vague).
 
 ## 2. Scope
 **In scope**
@@ -27,6 +28,7 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - Request-level **assertions** per scenario.
 - Pagination tests compare **ID sets** across pages for strictness.
 - Negative tests assert **array-of-errors** shape for `422` and `{ message }` object for `401/404`.
+- Error quality tests (status invalid) run in TDD style — toggleable strictness.
 
 ## 5. Environments & Data
 - `baseUrl = https://gorest.co.in/public/v2`
@@ -44,6 +46,7 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - All **Negative** tests return expected 4xx with expected shapes/messages.
 - Pagination rules verified (no overlap; invalid page == page 1 set).
 - Boundary checks pass as defined.
+- Error quality tests pass in observation mode (and strict mode when enabled).
 
 ## 7. Test Execution Order (recommended)
 1. **Users / Pagination**: `page=1` → `page=2` → `invalid page` (no data mutations).
@@ -56,6 +59,7 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
    - **Token**: `missing` and `invalid` → `401`.
    - **ID**: `update non-existing id` → `404`.
 4. **Users / Boundary**: `name length = 1` → `201`.
+5. **Users / Error Quality**: invalid `status` (string/number) → `422` with specific message.
 
 ## 8. Risks & Mitigations
 - **Live public data may change** → schema kept light; strict comparisons restricted to pagination IDs.
@@ -73,8 +77,10 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 | Get user by id returns 200 and correct `id` | Users / Happy Path / Get user by id - 200 |
 | Update persists fields | Users / Happy Path / Update user (name/status) - 200 |
 | Delete returns 204, subsequent GET is 404 | Users / Happy Path / Delete user - 204; Verify deleted user - 404 |
-| Pagination: page 1 vs page 2 have no overlap | Users / Pagination / Page 2 |
+| Pagination: page 1 caches IDs | Users / Pagination / Page 1 |
+| Pagination: page 2 has no overlap with page 1 | Users / Pagination / Page 2 |
 | Invalid page falls back to page 1 set | Users / Pagination / invalid page |
 | 422 error array shape + field targeting | Users / Negative (Email/Name/Gender/Status) |
 | 401/404 error object has `message` | Users / Negative (Token, ID) |
 | Boundary: minimal name length accepted | Users / Boundary / name length = 1 |
+| Error quality: invalid `status` has clear specific message (TDD) | Users / Error Quality / status invalid (string, number) |
