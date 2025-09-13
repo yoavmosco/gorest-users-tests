@@ -52,3 +52,18 @@
 | ID | Title | Pre-conditions | Steps | Expected |
 |---|---|---|---|---|
 | TC-BD-01 | Create user — name length = 1 — 201 | Valid `token`, unique `email` | POST with `name="Q"` | 201; numeric `id` |
+
+## Pagination
+| ID | Title | Pre-conditions | Steps | Expected |
+|---|---|---|---|---|
+| TC-PG-01 | Pagination — Page 1 snapshot | — | GET `/users?page=1`; cache IDs (`users_page1_ids`) | 200; cache saved; cached count equals page length |
+| TC-PG-02 | Pagination — Page 2 has no overlap | After TC-PG-01 | GET `/users?page=2`; compare with cached IDs | 200; **0** overlapping IDs with Page 1 |
+| TC-PG-03 | Pagination — invalid page equals Page 1 (set-compare) | After TC-PG-01 | GET `/users?page=-1` (or non‑numeric); set-compare vs Page 1 | 200; same item **set** as Page 1 (order‑agnostic) |
+
+## Error Quality
+| ID | Title | Pre-conditions | Steps | Expected |
+|---|---|---|---|---|
+| TC-EQ-01 | Create user — status invalid (string) — 422 | Valid `token`, unique `email` | POST with `status="invalid status"` | 422; error **array** includes `field=status`; message ideally specific (e.g., “invalid / must be one of …”) |
+| TC-EQ-02 | Create user — status invalid (number) — 422 | Valid `token`, unique `email` | POST with `status=1` | 422; error **array** includes `field=status`; message ideally specific (e.g., “invalid / must be one of …”) |
+
+> Note: Specificity check is **toggleable** with `STRICT_ERROR_QUALITY=true` (env/collection) — when enabled, tests fail unless the message is explicit about allowed enum values.
