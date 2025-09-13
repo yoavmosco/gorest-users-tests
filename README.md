@@ -52,6 +52,7 @@ findings/
 | K2  | Error messages for invalid enums can be vague | Potential issue | POST `/users` with `status=123` | “must be one of …”     | “can’t be blank”       | Using error-quality tests as TDD    |
 
 ## Documentation
+- [Summary](SUMMARY.md)
 - [Test Plan](test-plan/TEST_PLAN.md)
 - [Test Cases](test-cases/TEST_CASES.md)
 - [Known Issues](findings/KNOWN_ISSUES.md)
