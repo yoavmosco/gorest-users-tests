@@ -13,7 +13,8 @@ Tests for GoREST **Users** API focusing on happy-path, negative, pagination (str
 ## How to run (Postman UI)
 1. Import collection: `postman/GoREST Users Tests.postman_collection.json`
 2. Import environment: `postman/env/GoREST Local.postman_environment.json`
-3. Set env variables: `baseUrl`, `token` (put your real token in Postman, not in Git).
+3. **Set environment variable:** `token` (insert your personal GoREST API token in Postman UI; never commit it to Git).
+   - `baseUrl` is already preconfigured in the environment file.
 4. Run folders:
    - Pagination: run page=1 → page=2 → invalid.
    - Negative / Email: **Seed (201)** → **Duplicate (422)** → **Cleanup (204)**.
@@ -36,13 +37,24 @@ postman/
 ├─ GoREST Users Tests.postman_collection.json
 └─ env/
    └─ GoREST Local.postman_environment.json
+test-plan/
+└─ TEST_PLAN.md
+test-cases/
+└─ TEST_CASES.md
+findings/
+└─ KNOWN_ISSUES.md
 ```
 
 ## Known issues / Findings
 | ID  | Title                                | Type            | Repro (high level)                 | Expected               | Actual                 | Status/Notes                        |
-|-----|--------------------------------------|-----------------|-----------------------------------|------------------------|------------------------|-------------------------------------|
+|-----|--------------------------------------|-----------------|-----------------------------------|------------------------|------------------------|------------------------------------- |
 | K1  | Invalid `page` falls back to Page 1  | Finding         | GET `/users?page=-1` after Page 1 | Error or explicit empty | Same item set as Page 1 | Covered by strict compare test      |
 | K2  | Error messages for invalid enums can be vague | Potential issue | POST `/users` with `status=123` | “must be one of …”     | “can’t be blank”       | Using error-quality tests as TDD    |
+
+## Documentation
+- [Test Plan](test-plan/TEST_PLAN.md)
+- [Test Cases](test-cases/TEST_CASES.md)
+- [Known Issues](findings/KNOWN_ISSUES.md)
 
 ## Next steps (optional)
 - Add Newman in CI (GitHub Actions) with an HTML report.
