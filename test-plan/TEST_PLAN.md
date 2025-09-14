@@ -49,17 +49,18 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - Error quality tests pass in observation mode (and strict mode when enabled).
 
 ## 7. Test Execution Order (recommended)
-1. **Users / Pagination**: `page=1` → `page=2` → `invalid page` (no data mutations).
-2. **Users / Happy Path**: `Create (201)` → `Get by id (200)` → `Get all (200)` → `Update (200)` → `Delete (204)` → `Verify 404`.
-3. **Users / Negative**:
+1. **Users / Happy Path**: `Create (201)` → `Get by id (200)` → `Get all (200)` → `Update (200)` → `Delete (204)` → `Verify 404`.
+2. **Users / Negative**:
    - **Email**: `Create seed (201)` → `Duplicate (422)` → `Cleanup (204)`; plus `missing` and `invalid format` cases.
    - **Name**: `missing`, `empty`, `space` → `422`.
    - **Gender**: `missing`, `invalid enum` → `422`.
    - **Status**: `missing`, `empty`, `space` → `422`.
    - **Token**: `missing` and `invalid` → `401`.
    - **ID**: `update non-existing id` → `404`.
-4. **Users / Boundary**: `name length = 1` → `201`.
+3. **Users / Boundary**: `name length = 1` → `201`.
+4. **Users / Pagination**: `page=1` → `page=2` → `invalid page` (no data mutations).
 5. **Users / Error Quality**: invalid `status` (string/number) → `422` with specific message.
+6. **Users / Error Quality - Mock Server (TDD)**: `{{mockBaseUrl}}/users` — invalid `status` (string/number) → `422` with **specific** enum message (strict).  
 
 ## 8. Risks & Mitigations
 - **Live public data may change** → schema kept light; strict comparisons restricted to pagination IDs.
