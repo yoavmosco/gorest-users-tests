@@ -32,6 +32,7 @@ Assertions for **clear error messages** and correct **4xx codes** are written fi
 Example focus: duplicate email (422), invalid enums, missing required fields.
 
 ## Mock-based TDD (Postman Mock Server)
+Following the section above, this mock server was created to demonstrate the TDD approach for invalid error messages
 A small Postman Mock Server demonstrates the **desired fix** for invalid `status` messages.
 
 **Folder:** `Users / Error Quality – Mock Server (TDD)`  
