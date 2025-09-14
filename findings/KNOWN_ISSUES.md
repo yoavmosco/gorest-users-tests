@@ -17,7 +17,7 @@
   - In strict mode: live API tests fail until they match the enum message.  
   - The Mock folder *Error Quality – Mock Server (TDD)* acts as the **Definition of Done** reference.
 
-## Bug/Issue Template (if you open a GitHub Issue)
+## Bug/Issue Template
 **Title:** `/users` – invalid `status` returns generic message
 
 **Steps to Reproduce**
