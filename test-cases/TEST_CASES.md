@@ -67,3 +67,9 @@
 | TC-EQ-02 | Create user — status invalid (number) — 422 | Valid `token`, unique `email` | POST with `status=1` | 422; error **array** includes `field=status`; message ideally specific (e.g., “invalid / must be one of …”) |
 
 > Note: Specificity check is **toggleable** with `STRICT_ERROR_QUALITY=true` (env/collection) — when enabled, tests fail unless the message is explicit about allowed enum values.
+
+## Mock (TDD)
+| ID       | Title | Pre-conditions        | Steps | Expected |
+|----------|-------|-----------------------|-------|----------|
+| TC-MK-01 | Mock: invalid `status` (number) — 422 strict | `mockBaseUrl` set | POST `{{mockBaseUrl}}/users` with `status=123` | 422; error array includes `field=status`; message specific (enum) |
+| TC-MK-02 | Mock: invalid `status` (string) — 422 strict | `mockBaseUrl` set | POST `{{mockBaseUrl}}/users` with `status="abc"` | 422; error array includes `field=status`; message specific (enum) |
