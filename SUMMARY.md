@@ -44,7 +44,8 @@ README.md
 - **Negative:** Email, Name, Gender, Status, Token, ID (422/401/404).  
 - **Boundary:** Minimal accepted values (name length = 1).  
 - **Pagination:** No overlap between pages, invalid page = page 1 set.  
-- **Error Quality:** Clarity of messages for invalid enums (TDD approach, toggleable strictness).  
+- **Error Quality (Enum fields):** clarity of messages for invalid `status` (TDD approach, toggleable strictness).  
+- **Mock Server (TDD):** strict reference for expected error messages, independent of live API.
 
 ---
 
@@ -52,7 +53,7 @@ README.md
 1. Import collection and environment in Postman.  
 2. Set `token` in the environment (do **not** commit secrets).  
 3. Run by folder in Postman Runner (or Newman in CI).  
-   - Recommended order: Pagination → Happy Path → Negative → Boundary → Error Quality.  
+   - Recommended order: Happy Path → Negative → Boundary → Pagination → Error Quality.  
 
 ---
 
@@ -62,5 +63,6 @@ This project illustrates:
 - ✅ API testing with **Postman assertions + environment data**.  
 - ✅ Awareness of real-world issues (public API flakiness, vague error messages).  
 - ✅ CI/CD readiness (Newman CLI, GitHub Actions optional).  
+- ✅ TDD thinking via **Mock Server baseline** for strict error validation.  
 
 ---
