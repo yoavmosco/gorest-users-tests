@@ -31,6 +31,17 @@ Tests for GoREST **Users** API focusing on happy-path, negative, pagination (str
 Assertions for **clear error messages** and correct **4xx codes** are written first and then used as **TDD** until the behavior matches.  
 Example focus: duplicate email (422), invalid enums, missing required fields.
 
+## Mock-based TDD (Postman Mock Server)
+A small Postman Mock Server demonstrates the **desired fix** for invalid `status` messages.
+
+**Folder:** `Users / Error Quality – Mock Server (TDD)`  
+**How it works:**
+- `DEF: POST /users — invalid status (422 example only)` holds a 422 Example used by the mock (do **not** run it).
+- Runnable requests call `{{mockBaseUrl}}/users` with invalid `status` (number/string) and assert **STRICT** message:
+  `[{"field":"status","message":"status is invalid; must be one of: active, inactive"}]`.
+
+**Environment:** add `mockBaseUrl = https://<your-mock-id>.mock.pstmn.io` (No Auth required for the mock).
+
 ## Repo structure
 ```
 postman/
