@@ -34,4 +34,6 @@
 - Error message contains “invalid” or “must be one of: active, inactive”.
 
 **Verification**
-- Postman tests under **Error Quality** pass in **strict mode** (`STRICT_ERROR_QUALITY=true`).
+- Postman tests under **Error Quality** pass in **strict mode** (`STRICT_ERROR_QUALITY=true`).  
+- Cross-checked against Mock Server reference (always strict).
+
