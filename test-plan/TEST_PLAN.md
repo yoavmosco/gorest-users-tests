@@ -6,7 +6,8 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - Robust error handling for 401/404/422.
 - Pagination behaves deterministically (no overlap between pages; invalid page falls back to page 1 item set).
 - Basic boundary checks (e.g., minimal name length).
-- Error message quality is clear and specific (not vague).
+- Error message quality is clear and specific (not vague).  
+- Error message quality validated against both the live API (observation mode) and a Postman Mock Server (Definition of Done, TDD strict baseline).
 
 ## 2. Scope
 **In scope**
@@ -28,7 +29,8 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - Request-level **assertions** per scenario.
 - Pagination tests compare **ID sets** across pages for strictness.
 - Negative tests assert **array-of-errors** shape for `422` and `{ message }` object for `401/404`.
-- Error quality tests (status invalid) run in TDD style — toggleable strictness.
+- Error quality tests (status invalid) run in TDD style — toggleable strictness.  
+- Mock Server defines the expected strict messages and serves as the TDD baseline, independent of live API behavior.
 
 ## 5. Environments & Data
 - `baseUrl = https://gorest.co.in/public/v2`
@@ -46,7 +48,7 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - All **Negative** tests return expected 4xx with expected shapes/messages.
 - Pagination rules verified (no overlap; invalid page == page 1 set).
 - Boundary checks pass as defined.
-- Error quality tests pass in observation mode (and strict mode when enabled).
+- Mock-based Error Quality tests always pass (baseline strict expectation), while live API runs pass in observation mode unless strict mode is enabled.
 
 ## 7. Test Execution Order (recommended)
 1. **Users / Happy Path**: `Create (201)` → `Get by id (200)` → `Get all (200)` → `Update (200)` → `Delete (204)` → `Verify 404`.
@@ -74,7 +76,7 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 
 ## 9. Reporting
 - Run history in Postman Collection Runner.
-- (Optional) Newman CLI with HTML report in CI (GitHub Actions) for automated verification.
+- (Optional) Integrate with GitHub Actions for CI, publishing Newman HTML reports as build artifacts.
 
 ## 10. Traceability Matrix (high-level)
 | Requirement / Rule | Covered By (Collection Folder / Request) |
