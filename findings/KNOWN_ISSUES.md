@@ -9,8 +9,13 @@
 > These are **not necessarily bugs** in the API, but important behaviors to document for clients.
 
 ## How tests support TDD
-- Error‑message quality tests run **observation‑only** by default (keep runs green).  
+- Error-message quality tests run **observation-only** by default (keep runs green).  
 - To enforce TDD for a fix, set `STRICT_ERROR_QUALITY=true` (env/collection). Tests will **fail** until the API returns the specific message; after a fix they turn green.
+- A Postman Mock Server defines the **expected** error messages for invalid `status`.  
+  - These mock tests run **independently of `STRICT_ERROR_QUALITY`** (they always expect the strict message).  
+  - In observation mode: live API tests just document current behavior.  
+  - In strict mode: live API tests fail until they match the enum message.  
+  - The Mock folder *Error Quality – Mock Server (TDD)* acts as the **Definition of Done** reference.
 
 ## Bug/Issue Template (if you open a GitHub Issue)
 **Title:** `/users` – invalid `status` returns generic message
