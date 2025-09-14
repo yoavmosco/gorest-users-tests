@@ -61,7 +61,7 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 4. **Users / Pagination**: `page=1` → `page=2` → `invalid page` (no data mutations).
 5. **Users / Error Quality**: invalid `status` (string/number) → `422` with specific message.
 6. **Users / Error Quality - Mock Server (TDD)**: `{{mockBaseUrl}}/users` — invalid `status` (string/number) → `422` with **specific** enum message (strict).
-## 7a. Flow Control
+### 7a. Flow Control
 - Certain reference requests (e.g., DEF requests) are **kept in the collection** for documentation/manual runs,  
   but are **skipped automatically** during collection runs.  
 - This is implemented with `postman.setNextRequest()` to jump directly to the next relevant test.  
