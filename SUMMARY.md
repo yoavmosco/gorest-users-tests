@@ -46,7 +46,7 @@ README.md
 - **Pagination:** No overlap between pages, invalid page = page 1 set.  
 - **Error Quality (Enum fields):** clarity of messages for invalid `status` (TDD approach, toggleable strictness).  
 - **Mock Server (TDD):** strict reference for expected error messages, independent of live API.
-- **Flow Control:** selective skipping via `postman.setNextRequest` to demonstrate complex run logic.
+- **Flow Control:** selective skipping via `pm.execution.setNextRequest` to demonstrate complex run logic.
 
 ---
 
