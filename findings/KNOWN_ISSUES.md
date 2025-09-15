@@ -16,7 +16,7 @@
   - In observation mode: live API tests just document current behavior.  
   - In strict mode: live API tests fail until they match the enum message.  
   - The Mock folder *Error Quality – Mock Server (TDD)* acts as the **Definition of Done** reference.
-  - **Note:** The DEF request is kept for reference/documentation, but is skipped in automated runs using flow control (`postman.setNextRequest`).
+  - **Note:** The DEF request is kept for reference/documentation, but is skipped in automated runs using flow control (`pm.execution.setNextRequest`).
 
 ## Bug/Issue Template
 **Title:** `/users` – invalid `status` returns generic message
@@ -36,5 +36,4 @@
 
 **Verification**
 - Postman tests under **Error Quality** pass in **strict mode** (`STRICT_ERROR_QUALITY=true`).  
-- Cross-checked against Mock Server reference (always strict).
-
+- Cross-checked against Mock Server reference (**Definition of Done**, always strict).
