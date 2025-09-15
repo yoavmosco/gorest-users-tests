@@ -68,6 +68,7 @@ findings/
 - [Test Cases](test-cases/TEST_CASES.md)
 - [Known Issues](findings/KNOWN_ISSUES.md)
 
-## Next steps (optional)
-- Add Newman in CI (GitHub Actions) with an HTML report.
-- Expand the “Known issues” table as new behaviors are observed.
+## Future Improvements
+- CI integration with Newman + HTML reports (GitHub Actions).  
+- Continuous documentation of new findings as API evolves.  
+
