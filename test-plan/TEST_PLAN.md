@@ -51,18 +51,18 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - Mock-based Error Quality tests always pass (baseline strict expectation), while live API runs pass in observation mode unless strict mode is enabled.
 
 ## 7. Test Execution Order (recommended)
-1. **Users / Happy Path**: `Create (201)` → `Get by id (200)` → `Get all (200)` → `Update (200)` → `Delete (204)` → `Verify 404`.
-2. **Users / Negative**:
+1. **Happy Path**: `Create (201)` → `Get by id (200)` → `Get all (200)` → `Update (200)` → `Delete (204)` → `Verify 404`.
+2. **Negative**:
    - **Email**: `Create seed (201)` → `Duplicate (422)` → `Cleanup (204)`; plus `missing` and `invalid format` cases.
    - **Name**: `missing`, `empty`, `space` → `422`.
    - **Gender**: `missing`, `invalid enum` → `422`.
    - **Status**: `missing`, `empty`, `space` → `422`.
    - **Token**: `missing` and `invalid` → `401`.
    - **ID**: `update non-existing id` → `404`.
-3. **Users / Boundary**: `name length = 1` → `201`.
-4. **Users / Pagination**: `page=1` → `page=2` → `invalid page` (no data mutations).
-5. **Users / Error Quality**: invalid `status` (string/number) → `422` with specific message.
-6. **Users / Error Quality - Mock Server (TDD)**: `{{mockBaseUrl}}/users` — invalid `status` (string/number) → `422` with **specific** enum message (strict).
+3. **Boundary**: `name length = 1` → `201`.
+4. **Pagination**: `page=1` → `page=2` → `invalid page` (no data mutations).
+5. **Error Quality**: invalid `status` (string/number) → `422` with specific message.
+6. **Error Quality - Mock Server (TDD)**: `{{mockBaseUrl}}/users` — invalid `status` (string/number) → `422` with **specific** enum message (strict).
 ### 7a. Flow Control
 - Certain reference requests (e.g., DEF requests) are **kept in the collection** for documentation/manual runs,  
   but are **skipped automatically** during collection runs.  
