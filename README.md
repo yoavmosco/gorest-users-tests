@@ -32,13 +32,22 @@ Assertions for **clear error messages** and correct **4xx codes** are written fi
 Example focus: duplicate email (422), invalid enums, missing required fields.
 
 ## Mock-based TDD (Postman Mock Server)
-Following the section above, this mock server was created to demonstrate the TDD approach for invalid error messages, specifically showing the desired fix for invalid status messages.
+Following the section above, this mock server was created to demonstrate the TDD approach for invalid error messages, specifically showing the desired fix for invalid `status` messages.
 
 **Folder:** `Users / Error Quality – Mock Server (TDD)`  
 **How it works:**
-- `DEF: POST /users — invalid status (422 example only)` holds a 422 Example used by the mock (do **not** run it).
-- Runnable requests call `{{mockBaseUrl}}/users` with invalid `status` (number/string) and assert **STRICT** message:
-  `[{"field":"status","message":"status is invalid; must be one of: active, inactive"}]`.
+- `DEF: POST /users — invalid status (422 example only)` holds a 422 Example used by the mock (do **not** run it).  
+- Runnable requests:  
+  - `MOCK: invalid status (string)`  
+  - `MOCK: invalid status (number)`  
+  These call `{{mockBaseUrl}}/users` with invalid values and always assert the **STRICT** message:  
+  ```json
+  [
+    {
+      "field": "status",
+      "message": "status is invalid; must be one of: active, inactive"
+    }
+  ]
 
 **Environment:** add `mockBaseUrl = https://<your-mock-id>.mock.pstmn.io` (No Auth required for the mock).
 
