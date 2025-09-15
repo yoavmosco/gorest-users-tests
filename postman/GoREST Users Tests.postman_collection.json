@@ -2,14 +2,14 @@
 	"info": {
 		"_postman_id": "9e3f57dc-1597-4b96-b44b-6d75642e6fcf",
 		"name": "GoREST Users Tests",
-		"description": "This collection validates core behavior of the GoRest Users API.  \nScope: happy-path, negative/error cases, pagination, boundary checks, and error-message quality audits.  \nTest style: folder-level checks (status/array/light schema), request-level rules per scenario.  \nFor pagination details (rules and run order), see the Pagination folder.",
+		"description": "This collection validates core behavior of the GoREST Users API.  \nScope: happy-path, negative/error cases, pagination, boundary checks, and error-message quality audits.  \nTest style: folder-level checks (status/array/light schema) and request-level rules per scenario.  \nIncludes TDD-style error-quality checks, with optional Postman Mock Server baseline.  \nRun by folder in Postman Runner (recommended: Happy Path → Negative → Boundary → Pagination → Error Quality).  \nSee repo docs for full Test Plan, Test Cases, and Known Issues.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "47502077",
 		"_collection_link": "https://yoavmosco1-1403460.postman.co/workspace/QA-Portfolio~fee0fe15-2761-4fec-a6c0-026b394e5c6c/collection/47502077-9e3f57dc-1597-4b96-b44b-6d75642e6fcf?action=share&source=collection_link&creator=47502077"
 	},
 	"item": [
 		{
-			"name": "Users / Happy Path",
+			"name": "Happy Path",
 			"item": [
 				{
 					"name": "Create user - 201 + save id",
@@ -410,7 +410,7 @@
 			]
 		},
 		{
-			"name": "Users / Negative",
+			"name": "Negative",
 			"item": [
 				{
 					"name": "Email",
@@ -1702,7 +1702,7 @@
 			]
 		},
 		{
-			"name": "Users / Boundary",
+			"name": "Boundary",
 			"item": [
 				{
 					"name": "Create user - name length = 1 (status 201)",
@@ -1789,7 +1789,7 @@
 			"description": "Purpose: exercise edges (enums, min/max lengths) and pagination edges.  \nNotes: does not mutate data unless explicitly stated."
 		},
 		{
-			"name": "Users / Pagination",
+			"name": "Pagination",
 			"item": [
 				{
 					"name": "Pagination – Page 1",
@@ -2045,7 +2045,7 @@
 			]
 		},
 		{
-			"name": "Users / Error Quality",
+			"name": "Error Quality",
 			"item": [
 				{
 					"name": "Create user - status invalid - 422",
@@ -2091,7 +2091,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"invalid status\"\r\n}"
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"abc\"\r\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/users",
@@ -2106,7 +2106,7 @@
 					"response": []
 				},
 				{
-					"name": "Create user - status invalid (num) - 422",
+					"name": "Create user - status invalid (number) - 422",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -2122,7 +2122,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									""
+									"const next = 'MOCK: invalid status (string)';\r",
+									"console.log('NEXT ->', next);\r",
+									"pm.execution.setNextRequest(next);"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -2149,7 +2151,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": 1\r\n}"
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": 123\r\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/users",
@@ -2225,6 +2227,254 @@
 							"    pm.expect(true).to.be.true; // keep CI green\r",
 							"  });\r",
 							"}\r",
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Quality - Mock Server (TDD)",
+			"item": [
+				{
+					"name": "DEF: POST /users - invalid status (422 example only)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{mockBaseUrl}}/users",
+							"host": [
+								"{{mockBaseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "invalid status (desired message) - 422",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mockBaseUrl}}/users",
+									"host": [
+										"{{mockBaseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"status": "Unprocessable Content",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[\n    {\n        \"field\": \"status\",\n        \"message\": \"status is invalid; must be one of: active, inactive\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "MOCK: invalid status (string)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[STATUS] 422 (mock)\", () => pm.response.to.have.status(422));\r",
+									"\r",
+									"const errs = pm.response.json();\r",
+									"const item = Array.isArray(errs) ? errs.find(e => (e.field || \"\").toLowerCase() === \"status\") : null;\r",
+									"\r",
+									"pm.test(\"[QUALITY] strict enum message (mock)\", () => {\r",
+									"  pm.expect(item).to.exist;\r",
+									"  pm.expect(item.message).to.eql(\"status is invalid; must be one of: active, inactive\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"qa_mock_num@example.com\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"abc\"\r\n}"
+						},
+						"url": {
+							"raw": "{{mockBaseUrl}}/users",
+							"host": [
+								"{{mockBaseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MOCK: invalid status (number)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[STATUS] 422 (mock)\", () => pm.response.to.have.status(422));\r",
+									"\r",
+									"const errs = pm.response.json();\r",
+									"const item = Array.isArray(errs) ? errs.find(e => (e.field || \"\").toLowerCase() === \"status\") : null;\r",
+									"\r",
+									"pm.test(\"[QUALITY] strict enum message (mock)\", () => {\r",
+									"  pm.expect(item).to.exist;\r",
+									"  pm.expect(item.message).to.eql(\"status is invalid; must be one of: active, inactive\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"qa_mock_num@example.com\",\r\n  \"gender\": \"male\",\r\n  \"status\": 123\r\n}"
+						},
+						"url": {
+							"raw": "{{mockBaseUrl}}/users",
+							"host": [
+								"{{mockBaseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Purpose: Mock-based TDD for error-message quality on invalid `status`.  \nWe define a single 422 example for POST /users and assert STRICT equality against it.\n\nHow to use:  \n• Do NOT run the “DEF: … (example only)” item — it only holds the 422 example for the Mock.  \n• Run the requests here (string/number) against {{mockBaseUrl}}.  \n• Each test expects:\n\n- 422 status\n    \n- Response array with { field: \"status\", message: \"status is invalid; must be one of: active, inactive\" }\n    \n\nNotes:  \n• No Auth is required for the mock.  \n• Only one example is needed — both inputs map to the same desired response.  \n• This acts as a “future fix” definition (TDD) while the live API still returns a vaguer message.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
 							""
 						]
 					}
