@@ -83,14 +83,14 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 ## 10. Traceability Matrix (high-level)
 | Requirement / Rule | Covered By (Collection Folder / Request) |
 |---|---|
-| Create user returns 201 with numeric `id` and echoed `email` | Users / Happy Path / Create user - 201 + save id |
-| Get user by id returns 200 and correct `id` | Users / Happy Path / Get user by id - 200 |
-| Update persists fields | Users / Happy Path / Update user (name/status) - 200 |
-| Delete returns 204, subsequent GET is 404 | Users / Happy Path / Delete user - 204; Verify deleted user - 404 |
-| 422 error array shape + field targeting | Users / Negative (Email/Name/Gender/Status) |
-| 401/404 error object has `message` | Users / Negative (Token, ID) |
-| Boundary: minimal name length accepted | Users / Boundary / name length = 1 |
-| Pagination: page 1 caches IDs | Users / Pagination / Page 1 |
-| Pagination: page 2 has no overlap with page 1 | Users / Pagination / Page 2 |
-| Invalid page falls back to page 1 set | Users / Pagination / invalid page |
-| Error quality: invalid `status` has clear specific message (TDD) | Users / Error Quality / status invalid (string, number) |
+| Create user returns 201 with numeric `id` and echoed `email` | Happy Path / Create user - 201 + save id |
+| Get user by id returns 200 and correct `id` | Happy Path / Get user by id - 200 |
+| Update persists fields | Happy Path / Update user (name/status) - 200 |
+| Delete returns 204, subsequent GET is 404 | Happy Path / Delete user - 204; Verify deleted user - 404 |
+| 422 error array shape + field targeting | Negative (Email/Name/Gender/Status) |
+| 401/404 error object has `message` | Negative (Token, ID) |
+| Boundary: minimal name length accepted | Boundary / name length = 1 |
+| Pagination: page 1 caches IDs | Pagination / Page 1 |
+| Pagination: page 2 has no overlap with page 1 | Pagination / Page 2 |
+| Invalid page falls back to page 1 set | Pagination / invalid page |
+| Error quality: invalid `status` has clear specific message (TDD) | Error Quality / status invalid (string, number) — Live API (observation/strict) + Mock Server (baseline) |
