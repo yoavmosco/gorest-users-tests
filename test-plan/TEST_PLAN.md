@@ -66,13 +66,15 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 ### 7a. Flow Control
 - Certain reference requests (e.g., DEF requests) are **kept in the collection** for documentation/manual runs,  
   but are **skipped automatically** during collection runs.  
-- This is implemented with `postman.setNextRequest()` to jump directly to the next relevant test.  
-- Purpose: maintain a clean automated run in Runner/Newman, while preserving useful reference requests in the repo. 
+- Implemented via `pm.execution.setNextRequest()` to jump directly to the next relevant test.  
+- Purpose: maintain a clean automated run in Runner/Newman, while preserving useful reference requests in the repo.
 
 ## 8. Risks & Mitigations
-- **Live public data may change** → schema kept light; strict comparisons restricted to pagination IDs.
-- **Duplicate-email timing** → use deterministic seed/duplicate/cleanup flow.
-- **Auth rate limits or token expiry** → keep token fresh and avoid excessive runs.
+- **Live public data may change** → schema kept light; strict comparisons restricted to pagination IDs.  
+- **Duplicate-email timing** → use deterministic seed/duplicate/cleanup flow.  
+- **Orphaned test data (leftover users)** → avoided by cleanup steps in Negative tests.  
+- **Auth rate limits or token expiry** → keep token fresh and avoid excessive runs.  
+- **Vague error messages in live API** → mitigated by Mock Server baseline (strict expected messages).
 
 ## 9. Reporting
 - Run history in Postman Collection Runner.
