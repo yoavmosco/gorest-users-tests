@@ -34,6 +34,12 @@
 | TC-NG-01 | Create user — gender missing — 422 | Valid `token`, unique `email` | POST without `gender` | 422; error array with `field=gender` |
 | TC-NG-02 | Create user — gender invalid — 422 | Valid `token`, unique `email` | POST with `gender="invalid gender"` | 422; error array with `field=gender` |
 
+## Negative — Token
+| ID | Title | Pre-conditions | Steps | Expected |
+|---|---|---|---|---|
+| TC-NT-01 | Create user — missing token — 401 | Token removed/empty | POST valid body with empty bearer | 401; body object with `message` mentioning authentication |
+| TC-NT-02 | Create user — token invalid — 401 | Use fake token | POST valid body | 401; body object with `message` mentioning invalid token |
+
 ## Negative — Status
 | ID | Title | Pre-conditions | Steps | Expected |
 |---|---|---|---|---|
@@ -41,11 +47,9 @@
 | TC-NS-02 | Create user — status empty — 422 | Valid `token`, unique `email` | POST with `status=""` | 422; error array with `field=status` |
 | TC-NS-03 | Create user — status space — 422 | Valid `token`, unique `email` | POST with `status=" "` | 422; error array with `field=status` |
 
-## Negative — Token / ID
+## Negative — ID
 | ID | Title | Pre-conditions | Steps | Expected |
 |---|---|---|---|---|
-| TC-NT-01 | Create user — missing token — 401 | Token removed/empty | POST valid body with empty bearer | 401; body object with `message` mentioning authentication |
-| TC-NT-02 | Create user — token invalid — 401 | Use fake token | POST valid body | 401; body object with `message` mentioning invalid token |
 | TC-ID-01 | Update user — non-existing id — 404 | — | PUT `/users/10` (known missing) | 404; body object with `message` mentioning not found |
 
 ## Boundary
