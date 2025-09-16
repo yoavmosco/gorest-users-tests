@@ -1,0 +1,2525 @@
+{
+	"info": {
+		"_postman_id": "9e3f57dc-1597-4b96-b44b-6d75642e6fcf",
+		"name": "GoREST Users Tests",
+		"description": "This collection validates core behavior of the GoREST Users API.  \nScope: happy-path, negative/error cases, pagination, boundary checks, and error-message quality audits.  \nTest style: folder-level checks (status/array/light schema) and request-level rules per scenario.  \nIncludes TDD-style error-quality checks, with optional Postman Mock Server baseline.  \nRun by folder in Postman Runner (recommended: Happy Path → Negative → Boundary → Pagination → Error Quality).  \nSee repo docs for full Test Plan, Test Cases, and Known Issues.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "47502077",
+		"_collection_link": "https://yoavmosco1-1403460.postman.co/workspace/QA-Portfolio~fee0fe15-2761-4fec-a6c0-026b394e5c6c/collection/47502077-9e3f57dc-1597-4b96-b44b-6d75642e6fcf?action=share&source=collection_link&creator=47502077"
+	},
+	"item": [
+		{
+			"name": "Happy Path",
+			"item": [
+				{
+					"name": "Create user - 201 + save id",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Each run creates a unique email (qa_<timestamp>@example.com)",
+									"// to prevent \"has already been taken\" validation errors.",
+									"",
+									"pm.collectionVariables.set(\"uniqueEmail\", `qa_${Date.now()}@example.com`);",
+									"console.log('uniqueEmail:', pm.collectionVariables.get('uniqueEmail'));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('[STATUS] code is 201 (Created)', () => {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const body = pm.response.json();",
+									"",
+									"pm.test(\"[DATA] has id field\", () => {",
+									"  pm.expect(body).to.have.property(\"id\");",
+									"});",
+									"",
+									"pm.test(\"[DATA] id is number\", () => {",
+									"  pm.expect(body.id).to.be.a(\"number\");",
+									"});",
+									"",
+									"pm.test(\"[DATA] email matches input\", () => {",
+									"  const inputEmail = pm.collectionVariables.get(\"uniqueEmail\");",
+									"  pm.expect(body.email).to.eql(inputEmail);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"userId\", body.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user by id - 200",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('[STATUS] code is 200', () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const body = pm.response.json();",
+									"",
+									"pm.test('[DATA] ID is correct', () => {",
+									"    pm.expect(body.id).to.eql(Number(pm.collectionVariables.get('userId')));",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all users - 200",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('[STATUS] code is 200', () => {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update user (name/status) - 200",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('[STATUS] code is 200', () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const body = pm.response.json();",
+									"",
+									"pm.test('[DATA] name updated correctly', () => {",
+									"    pm.expect(body.name).to.eql('QA Portfolio User Updated');",
+									"});",
+									"pm.test('[DATA] status updated correctly', () => {",
+									"    pm.expect(body.status).to.eql('inactive'); ",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"QA Portfolio User Updated\", \"status\": \"inactive\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user - 204",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('[STATUS] code is 204', () => {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify deleted user - 404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[STATUS] code is 404 (Not Found)\", () => {",
+									"  pm.response.to.have.status(404);",
+									"});",
+									"",
+									"const err = pm.response.json();",
+									"pm.test(\"[ERROR] object has 'message'\", () => {",
+									"  pm.expect(err).to.be.an(\"object\");",
+									"  pm.expect(err).to.have.property(\"message\");",
+									"  pm.expect(err.message).to.be.a(\"string\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Purpose: verify successful flows (list, get by id, create 201, update, delete 204→404).  \nNotes: folder-level checks cover status/shape; requests assert echoes/persistence.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"// Validate basic \"user\" schema on /users for **successful (2xx) JSON** responses only\r",
+							"const url    = pm.request.url.toString();\r",
+							"const isUser = url.includes(\"/users\");\r",
+							"const isJson = (pm.response.headers.get(\"Content-Type\") || \"\").includes(\"application/json\");\r",
+							"const code   = pm.response.code;\r",
+							"const is2xx  = code >= 200 && code < 300;\r",
+							"\r",
+							"if (isUser && isJson && is2xx) {\r",
+							"  const body = pm.response.json();\r",
+							"\r",
+							"  const userSchema = {\r",
+							"    type: \"object\",\r",
+							"    required: [\"id\", \"name\", \"email\", \"gender\", \"status\"],\r",
+							"    properties: {\r",
+							"      id:     { type: \"integer\" },\r",
+							"      name:   { type: \"string\", minLength: 1 },\r",
+							"      email:  { type: \"string\" },                 // keep simple for public API\r",
+							"      gender: { type: \"string\", enum: [\"male\", \"female\"] },\r",
+							"      status: { type: \"string\", enum: [\"active\", \"inactive\"] }\r",
+							"    },\r",
+							"    additionalProperties: true                    // looser = fewer flakes on public API\r",
+							"  };\r",
+							"\r",
+							"  if (Array.isArray(body)) {\r",
+							"    pm.test(\"[SCHEMA] list: each item matches user schema\", () => {\r",
+							"      pm.response.to.have.jsonSchema({ type: \"array\", items: userSchema });\r",
+							"    });\r",
+							"  } else {\r",
+							"    pm.test(\"[SCHEMA] single user matches schema\", () => {\r",
+							"      pm.response.to.have.jsonSchema(userSchema);\r",
+							"    });\r",
+							"  }\r",
+							"}\r",
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Negative",
+			"item": [
+				{
+					"name": "Email",
+					"item": [
+						{
+							"name": "Create user - email missing - 422",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"[STATUS] 422 (Unprocessable Entity)\", () => {\r",
+											"  pm.response.to.have.status(422);\r",
+											"});\r",
+											"\r",
+											"const errs = pm.response.json();\r",
+											"\r",
+											"pm.test(\"[BODY] response is an array (errors)\", () => {\r",
+											"  pm.expect(errs).to.be.an(\"array\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"[ERROR] includes 'email' field error\", () => {\r",
+											"  const emailErr = errs.find(e => (e.field || \"\").toLowerCase() === \"email\");\r",
+											"  pm.expect(emailErr, `got: ${JSON.stringify(errs)}`).to.exist;\r",
+											"  pm.expect(emailErr.message).to.be.a(\"string\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"No email user\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user - email invalid - 422",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"[STATUS] 422 (Unprocessable Entity)\", () => {\r",
+											"  pm.response.to.have.status(422);\r",
+											"});\r",
+											"\r",
+											"const errs = pm.response.json();\r",
+											"\r",
+											"pm.test(\"[BODY] response is an array (errors)\", () => {\r",
+											"  pm.expect(errs).to.be.an(\"array\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"[ERROR] includes 'email' field error\", () => {\r",
+											"  const emailErr = errs.find(e => (e.field || \"\").toLowerCase() === \"email\");\r",
+											"  pm.expect(emailErr, `got: ${JSON.stringify(errs)}`).to.exist;\r",
+											"  pm.expect(emailErr.message).to.be.a(\"string\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Invalid email user\",\r\n  \"email\": \"notvalid.com\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create seed user - 201",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"dupEmail\", `qa_dup_${Date.now()}@example.com`);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"[STATUS] 201 (Created)\", () => {",
+											"  pm.response.to.have.status(201);",
+											"});",
+											"",
+											"const seed = pm.response.json();",
+											"pm.test(\"[DATA] has numeric id\", () => {",
+											"  pm.expect(seed).to.have.property(\"id\");",
+											"  pm.expect(seed.id).to.be.a(\"number\");",
+											"});",
+											"",
+											"pm.collectionVariables.set(\"dupUserId\", seed.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{dupEmail}}\",\r\n  \"gender\": \"female\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user - email existing - 422",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"[STATUS] 422 (Unprocessable Entity)\", () => {\r",
+											"  pm.response.to.have.status(422);\r",
+											"});\r",
+											"\r",
+											"const errs = pm.response.json();\r",
+											"\r",
+											"pm.test(\"[BODY] response is an array (errors)\", () => {\r",
+											"  pm.expect(errs).to.be.an(\"array\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"[ERROR] includes 'email' field error\", () => {\r",
+											"  const emailErr = errs.find(e => (e.field || \"\").toLowerCase() === \"email\");\r",
+											"  pm.expect(emailErr, `got: ${JSON.stringify(errs)}`).to.exist;\r",
+											"  pm.expect(emailErr.message).to.be.a(\"string\");\r",
+											"});\r",
+											"\r",
+											"// (Optional) tiny observation about message clarity\r",
+											"const msg = (errs.find(e => (e.field || \"\").toLowerCase() === \"email\")?.message || \"\").toLowerCase();\r",
+											"if (!/(already|taken|exists)/.test(msg)) {\r",
+											"  console.log(\"[OBSERVATION] duplicate email message could be clearer:\", msg);\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Existing email user\",\r\n  \"email\": \"{{dupEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cleanup - seed user - 204",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"[SETUP] dupUserId present\", () => {\r",
+											"  pm.expect(pm.collectionVariables.get(\"dupUserId\"), \"missing dupUserId\").to.exist;\r",
+											"});\r",
+											"\r",
+											"pm.test(\"[STATUS] 204 (No Content)\", () => {\r",
+											"  pm.response.to.have.status(204);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"[BODY] empty body for 204\", () => {\r",
+											"  pm.expect(pm.response.text().length).to.eql(0);\r",
+											"});\r",
+											"\r",
+											"// clear variables for next runs\r",
+											"pm.collectionVariables.unset(\"dupUserId\");\r",
+											"pm.collectionVariables.unset(\"dupEmail\");"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/users/{{dupUserId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users",
+										"{{dupUserId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Name",
+					"item": [
+						{
+							"name": "Create user - name missing - 422",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user - name empty - 422",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user - name space - 422",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \" \",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"// Each run creates a unique email (qa_<timestamp>@example.com)\r",
+									"// to prevent \"has already been taken\" validation errors.\r",
+									"\r",
+									"pm.collectionVariables.set(\"uniqueEmail\", `qa_${Date.now()}@example.com`);\r",
+									"console.log('uniqueEmail:', pm.collectionVariables.get('uniqueEmail'));"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"pm.test(\"[STATUS] code is 422 (Unprocessable Entity)\", () => \r",
+									"  pm.expect(pm.response.code).to.eql(422)\r",
+									");\r",
+									"\r",
+									"const errs = pm.response.json();\r",
+									"\r",
+									"pm.test(\"[BODY] response is an array (errors)\", () => {\r",
+									"  pm.expect(errs).to.be.an(\"array\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"[ERROR] includes name field error\", () => {\r",
+									"  const nameErr = errs.find(e => e.field === \"name\");\r",
+									"  pm.expect(nameErr).to.exist;\r",
+									"  pm.expect(nameErr.message).to.be.a(\"string\");\r",
+									"});\r",
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Gender",
+					"item": [
+						{
+							"name": "Create user - gender missing - 422",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user - gender invaild - 422",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"invalid gender\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"// Each run creates a unique email (qa_<timestamp>@example.com)\r",
+									"// to prevent \"has already been taken\" validation errors.\r",
+									"\r",
+									"pm.collectionVariables.set(\"uniqueEmail\", `qa_${Date.now()}@example.com`);\r",
+									"console.log('uniqueEmail:', pm.collectionVariables.get('uniqueEmail'));"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"pm.test(\"[STATUS] code is 422 (Unprocessable Entity)\", () => \r",
+									"  pm.expect(pm.response.code).to.eql(422)\r",
+									");\r",
+									"\r",
+									"const errs = pm.response.json();\r",
+									"\r",
+									"pm.test(\"[BODY] response is an array (errors)\", () => {\r",
+									"  pm.expect(errs).to.be.an(\"array\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"[ERROR] includes gender field error\", () => {\r",
+									"  const genderErr = errs.find(e => e.field === \"gender\");\r",
+									"  pm.expect(genderErr).to.exist;\r",
+									"  pm.expect(genderErr.message).to.be.a(\"string\");\r",
+									"});\r",
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Token",
+					"item": [
+						{
+							"name": "Create user - missing token - 401",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const body = pm.response.json();",
+											"",
+											"pm.test(\"[ERROR] message mentions 'authentication '\", () => {",
+											"  pm.expect(body.message.toLowerCase()).to.include(\"authentication\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user - token invalid - 401",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const body = pm.response.json();",
+											"",
+											"pm.test(\"[ERROR] message mentions 'Invalid'\", () => {",
+											"  pm.expect(body.message.toLowerCase()).to.include(\"invalid\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "e6c7534311c5b9d72c7511f21e4805e538590110c46bf3f3a96126ff4b0aeca5",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"// Each run creates a unique email (qa_<timestamp>@example.com)\r",
+									"// to prevent \"has already been taken\" validation errors.\r",
+									"\r",
+									"pm.collectionVariables.set(\"uniqueEmail\", `qa_${Date.now()}@example.com`);\r",
+									"console.log('uniqueEmail:', pm.collectionVariables.get('uniqueEmail'));"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"pm.test('[STATUS] code is 401 (Unauthorized)', () => {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test(\"[BODY] response is an object\", () => {\r",
+									"  pm.expect(body).to.be.an(\"object\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"[DATA] has message field\", () => {\r",
+									"  pm.expect(body).to.have.property(\"message\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"[DATA] message is string\", () => {\r",
+									"  pm.expect(body.message).to.be.a(\"string\");\r",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Status",
+					"item": [
+						{
+							"name": "Create user - status missing - 422",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user - status empty - 422",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"\"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user - status space - 422",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \" \"\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"// Each run creates a unique email (qa_<timestamp>@example.com)\r",
+									"// to prevent \"has already been taken\" validation errors.\r",
+									"\r",
+									"pm.collectionVariables.set(\"uniqueEmail\", `qa_${Date.now()}@example.com`);\r",
+									"console.log('uniqueEmail:', pm.collectionVariables.get('uniqueEmail'));"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"pm.test(\"[STATUS] code is 422 (Unprocessable Entity)\", () => \r",
+									"  pm.expect(pm.response.code).to.eql(422)\r",
+									");\r",
+									"\r",
+									"const errs = pm.response.json();\r",
+									"\r",
+									"pm.test(\"[BODY] response is an array (errors)\", () => {\r",
+									"  pm.expect(errs).to.be.an(\"array\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"[ERROR] includes status field error\", () => {\r",
+									"  const statusErr = errs.find(e => e.field === \"status\");\r",
+									"  pm.expect(statusErr).to.exist;\r",
+									"  pm.expect(statusErr.message).to.be.a(\"string\");\r",
+									"});\r",
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "ID",
+					"item": [
+						{
+							"name": "Update user with non-existing id - 404",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('[STATUS] code is 404', () => {",
+											"    pm.response.to.have.status(404);",
+											"});",
+											"",
+											"const body = pm.response.json();",
+											"",
+											"pm.test(\"[BODY] response is an object\", () => {",
+											"  pm.expect(body).to.be.an(\"object\");",
+											"});",
+											"",
+											"pm.test(\"[DATA] has message field\", () => {",
+											"  pm.expect(body).to.have.property(\"message\");",
+											"});",
+											"",
+											"pm.test(\"[DATA] message is string\", () => {",
+											"  pm.expect(body.message).to.be.a(\"string\");",
+											"});",
+											"",
+											"pm.test(\"[ERROR] message mentions 'not found'\", () => {",
+											"  pm.expect(body.message.toLowerCase()).to.include(\"not found\");",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"name\": \"QA Portfolio User Updated\", \"status\": \"inactive\"}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users/10",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users",
+										"10"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			],
+			"description": "Purpose: validate error handling (401/403/404/422) and basic error format.  \nChecks: correct status codes, error array/object has 'message', field targeting (e.g., 'email', 'status').",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"// Run minimal error-schema checks for 4xx/5xx JSON responses\r",
+							"const status = pm.response.code;\r",
+							"const isJson = (pm.response.headers.get(\"Content-Type\") || \"\").includes(\"application/json\");\r",
+							"\r",
+							"if (status >= 400 && isJson) {\r",
+							"  const body = pm.response.json();\r",
+							"\r",
+							"  if (Array.isArray(body)) {\r",
+							"    // Common 422 style: array of { field?, message }\r",
+							"    pm.test(\"[SCHEMA] error array items have 'message' (and optional 'field')\", () => {\r",
+							"      body.forEach(e => {\r",
+							"        pm.expect(e).to.have.property(\"message\");\r",
+							"        pm.expect(e.message).to.be.a(\"string\");\r",
+							"        // optional: pm.expect(e).to.have.property(\"field\");\r",
+							"      });\r",
+							"    });\r",
+							"  } else if (body && typeof body === \"object\") {\r",
+							"    // Common 401/403/404 style: { message: \"...\" }\r",
+							"    pm.test(\"[SCHEMA] error object has 'message'\", () => {\r",
+							"      pm.expect(body).to.have.property(\"message\");\r",
+							"      pm.expect(body.message).to.be.a(\"string\");\r",
+							"    });\r",
+							"  }\r",
+							"}\r",
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Boundary",
+			"item": [
+				{
+					"name": "Create user - name length = 1 (status 201)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Each run creates a unique email (qa_<timestamp>@example.com)",
+									"// to prevent \"has already been taken\" validation errors.",
+									"",
+									"pm.collectionVariables.set(\"uniqueEmail\", `qa_${Date.now()}@example.com`);",
+									"console.log('uniqueEmail:', pm.collectionVariables.get('uniqueEmail'));",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('[STATUS] code is 201 (Created)', () => {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const body = pm.response.json();",
+									"",
+									"pm.test(\"[DATA] has id field\", () => {",
+									"  pm.expect(body).to.have.property(\"id\");",
+									"});",
+									"",
+									"pm.test(\"[DATA] id is number\", () => {",
+									"  pm.expect(body.id).to.be.a(\"number\");",
+									"});",
+									"",
+									"pm.test(\"[DATA] email matches input\", () => {",
+									"  const inputEmail = pm.collectionVariables.get(\"uniqueEmail\");",
+									"  pm.expect(body.email).to.eql(inputEmail);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Q\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"active\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Purpose: exercise edges (enums, min/max lengths) and pagination edges.  \nNotes: does not mutate data unless explicitly stated."
+		},
+		{
+			"name": "Pagination",
+			"item": [
+				{
+					"name": "Pagination – Page 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Purpose: cache Page 1 IDs for later strict comparisons.\r",
+									"// Pass: IDs saved; saved count equals page length.\r",
+									"\r",
+									"const users = pm.response.json();\r",
+									"const page1Ids = users.map(u => u.id);\r",
+									"pm.collectionVariables.set(\"users_page1_ids\", JSON.stringify(page1Ids));\r",
+									"\r",
+									"pm.test(\"[DATA] cached page 1 IDs stored\", () => {\r",
+									"  const cached = pm.collectionVariables.get(\"users_page1_ids\");\r",
+									"  pm.expect(cached, \"missing users_page1_ids\").to.be.a(\"string\");\r",
+									"  pm.expect(JSON.parse(cached).length, \"cached ids count must equal page length\").to.eql(users.length);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pagination – Page 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Purpose: ensure no duplicates between page 1 and page 2.\r",
+									"// Pass: overlap size === 0.\r",
+									"\r",
+									"const users2   = pm.response.json();\r",
+									"const page2Ids = users2.map(u => u.id);\r",
+									"\r",
+									"const saved = pm.collectionVariables.get(\"users_page1_ids\");\r",
+									"pm.test(\"[SETUP] page 1 IDs are cached\", () => {\r",
+									"  pm.expect(saved, \"run page=1 before page=2\").to.be.a(\"string\");\r",
+									"});\r",
+									"const page1Ids = JSON.parse(saved || \"[]\");\r",
+									"\r",
+									"const overlap = page2Ids.filter(id => page1Ids.includes(id));\r",
+									"if (overlap.length > 0) {\r",
+									"  console.log(\"[DEBUG] Overlap IDs (page 1 & 2):\", overlap);\r",
+									"}\r",
+									"\r",
+									"pm.test(\"[DATA] no overlap with page 1\", () => {\r",
+									"  pm.expect(overlap.length, `overlap: ${JSON.stringify(overlap)}`).to.eql(0);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Pagination – invalid page",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Purpose: invalid 'page' should behave like page 1 (same item set, order-agnostic).\r",
+									"// Pass: invalid-page IDs == page 1 IDs as a set.\r",
+									"\r",
+									"// Guard: ensure this is truly an invalid page value\r",
+									"const q = pm.request.url.query.toObject();\r",
+									"const n = Number(q.page);\r",
+									"pm.test(\"[SETUP] request uses an INVALID page value (<=0 or non-numeric)\", () => {\r",
+									"  pm.expect(isNaN(n) || n <= 0, `expected invalid page, got '${q.page}'`).to.eql(true);\r",
+									"});\r",
+									"\r",
+									"// Need page 1 snapshot\r",
+									"const saved = pm.collectionVariables.get(\"users_page1_ids\");\r",
+									"pm.test(\"[SETUP] page 1 IDs are cached\", () => {\r",
+									"  pm.expect(saved, \"run page=1 before invalid-page\").to.be.a(\"string\");\r",
+									"});\r",
+									"const page1Ids = JSON.parse(saved || \"[]\");\r",
+									"\r",
+									"// Compare sets (ignore order)\r",
+									"const invalidIds = pm.response.json().map(u => u.id);\r",
+									"const sameLength = invalidIds.length === page1Ids.length;\r",
+									"const sameItems  =\r",
+									"  sameLength &&\r",
+									"  invalidIds.every(id => page1Ids.includes(id)) &&\r",
+									"  page1Ids.every(id => invalidIds.includes(id));\r",
+									"\r",
+									"if (!sameItems) {\r",
+									"  const onlyInInvalid = invalidIds.filter(id => !page1Ids.includes(id));\r",
+									"  const onlyInPage1   = page1Ids.filter(id => !invalidIds.includes(id));\r",
+									"  console.log(\"[DEBUG] only in invalid page:\", onlyInInvalid);\r",
+									"  console.log(\"[DEBUG] only in page 1:\", onlyInPage1);\r",
+									"}\r",
+									"\r",
+									"pm.test(\"[DATA] invalid page falls back to page 1 (same items, order-agnostic)\", () => {\r",
+									"  pm.expect(sameItems, \"invalid page must return the same item set as page=1\").to.eql(true);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=-1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "-1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Purpose: validate pagination correctness.\n\nRules (STRICT):  \n• Page 1 caches IDs for comparison.  \n• Page 2 has NO overlap with Page 1 (0 shared IDs).  \n• Invalid page (<=0 or non-numeric) returns the SAME item set as Page 1 (order-agnostic).\n\nRun order: page=1 → page=2 → invalid.  \nNotes:  \n• Public data may change live; if a rare flake appears, re-run the three requests back-to-back.  \n• Avoid create/update/delete between these three calls.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"// Purpose: Validate basic \"user\" schema on /users endpoints.\r",
+							"// Guard: run only for requests whose URL contains \"/users\" and JSON response exists.\r",
+							"const isUsersReq = pm.request.url.toString().includes(\"/users\");\r",
+							"const isJson = (pm.response.headers.get(\"Content-Type\") || \"\").includes(\"application/json\");\r",
+							"if (isUsersReq && isJson) {\r",
+							"  const body = pm.response.json();\r",
+							"\r",
+							"  const userSchema = {\r",
+							"    type: \"object\",\r",
+							"    required: [\"id\", \"name\", \"email\", \"gender\", \"status\"],\r",
+							"    properties: {\r",
+							"      id:     { type: \"integer\" },            // numeric (integer)\r",
+							"      name:   { type: \"string\", minLength: 1 },\r",
+							"      email:  { type: \"string\" },             // keep simple to avoid flakiness on public API\r",
+							"      gender: { type: \"string\", enum: [\"male\", \"female\"] },\r",
+							"      status: { type: \"string\", enum: [\"active\", \"inactive\"] }\r",
+							"    },\r",
+							"    additionalProperties: true                 // looser = פחות פלייקיות בפאבליק API\r",
+							"  };\r",
+							"\r",
+							"  if (Array.isArray(body)) {\r",
+							"    pm.test(\"[SCHEMA] list: each item matches user schema\", () => {\r",
+							"      pm.response.to.have.jsonSchema({ type: \"array\", items: userSchema });\r",
+							"    });\r",
+							"  } else {\r",
+							"    pm.test(\"[SCHEMA] single user matches schema\", () => {\r",
+							"      pm.response.to.have.jsonSchema(userSchema);\r",
+							"    });\r",
+							"  }\r",
+							"}\r",
+							"\r",
+							"\r",
+							"const body = pm.response.json();\r",
+							"\r",
+							"pm.test(\"[STATUS] code is 200 (OK)\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"[DATA] response is array\", () => {\r",
+							"    pm.expect(body).to.be.an(\"array\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"[DATA] page has results (>0)\", () => {\r",
+							"  pm.expect(body.length).to.be.greaterThan(0);\r",
+							"});\r",
+							"\r",
+							"// Purpose (folder-level): Simple schema check for all pages.\r",
+							"// Ensures every item exposes a numeric 'id'.\r",
+							"// Applies to Page 1, Page 2, and invalid-page responses.\r",
+							"pm.test(\"[DATA] each item has numeric id\", () => {\r",
+							"  body.forEach(u => {\r",
+							"    pm.expect(u).to.have.property(\"id\");\r",
+							"    pm.expect(u.id).to.be.a(\"number\");\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Quality",
+			"item": [
+				{
+					"name": "Create user - status invalid - 422",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"abc\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create user - status invalid (number) - 422",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const next = 'MOCK: invalid status (string)';\r",
+									"console.log('NEXT ->', next);\r",
+									"pm.execution.setNextRequest(next);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"gender\": \"male\",\r\n  \"status\": 123\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Purpose: audit the clarity of error messages for invalid `status` on /users.\n\nScope (current):  \n• Invalid status as STRING (e.g., \"abc\") → expect a specific enum message  \n• Invalid status as NUMBER (e.g., 123) → expect a specific enum message\n\nMethod: we assert 422 + that the error points to the `status` field,  \nthen prefer specific text like “invalid / must be one of: active, inactive”  \nover generic “can’t be blank”.\n\nTDD angle: these tests can serve as TDD for a future fix.  \n• Default (observation-only): suite stays green while documenting the issue.  \n• When a fix is shipped, switch to strict mode and the tests will pass only with the corrected message.\n\nToggle (optional): set STRICT_ERROR_QUALITY=true (env or collection) to enforce strict failure until the message is fixed.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"// Each run creates a unique email (qa_<timestamp>@example.com)\r",
+							"// to prevent \"has already been taken\" validation errors.\r",
+							"\r",
+							"pm.collectionVariables.set(\"uniqueEmail\", `qa_${Date.now()}@example.com`);\r",
+							"console.log('uniqueEmail:', pm.collectionVariables.get('uniqueEmail'));"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"// 1) Status & shape (basic negative checks)\r",
+							"pm.test(\"[STATUS] 422 (Unprocessable Entity)\", () => {\r",
+							"  pm.response.to.have.status(422);\r",
+							"});\r",
+							"\r",
+							"const errs = pm.response.json();\r",
+							"\r",
+							"pm.test(\"[BODY] response is an array (errors)\", () => {\r",
+							"  pm.expect(errs).to.be.an(\"array\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"[ERROR] includes 'status' field error\", () => {\r",
+							"  const statusErr = errs.find(e => (e.field || \"\").toLowerCase() === \"status\");\r",
+							"  pm.expect(statusErr, `got: ${JSON.stringify(errs)}`).to.exist;\r",
+							"  pm.expect(statusErr.message).to.be.a(\"string\");\r",
+							"});\r",
+							"\r",
+							"// 2) Error message QUALITY (toggleable)\r",
+							"// \"Specific\" = hints invalid enum/value (not just \"blank\")\r",
+							"const statusErrItem = errs.find(e => (e.field || \"\").toLowerCase() === \"status\") || {};\r",
+							"const msg = String(statusErrItem.message || \"\").toLowerCase();\r",
+							"const isSpecific = /(invalid|must be one of|allowed values|enum)/.test(msg);\r",
+							"\r",
+							"// Strict toggle: Environment overrides Collection\r",
+							"const STRICT =\r",
+							"  (pm.environment.get(\"STRICT_ERROR_QUALITY\") || pm.collectionVariables.get(\"STRICT_ERROR_QUALITY\")) === \"true\";\r",
+							"\r",
+							"if (STRICT) {\r",
+							"  pm.test(\"[QUALITY] specific message for invalid 'status' (strict)\", () => {\r",
+							"    pm.expect(isSpecific, `got: \"${statusErrItem.message || \"\"}\"`).to.eql(true);\r",
+							"  });\r",
+							"} else {\r",
+							"  pm.test(\"[OBSERVATION] error message specificity for invalid 'status'\", () => {\r",
+							"    if (!isSpecific) {\r",
+							"      console.log(\"[OBSERVATION] Generic/misleading message for invalid 'status':\", statusErrItem);\r",
+							"    }\r",
+							"    pm.expect(true).to.be.true; // keep CI green\r",
+							"  });\r",
+							"}\r",
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Quality - Mock Server (TDD)",
+			"item": [
+				{
+					"name": "DEF: POST /users - invalid status (422 example only)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{mockBaseUrl}}/users",
+							"host": [
+								"{{mockBaseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "invalid status (desired message) - 422",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mockBaseUrl}}/users",
+									"host": [
+										"{{mockBaseUrl}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"status": "Unprocessable Content",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[\n    {\n        \"field\": \"status\",\n        \"message\": \"status is invalid; must be one of: active, inactive\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "MOCK: invalid status (string)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[STATUS] 422 (mock)\", () => pm.response.to.have.status(422));\r",
+									"\r",
+									"const errs = pm.response.json();\r",
+									"const item = Array.isArray(errs) ? errs.find(e => (e.field || \"\").toLowerCase() === \"status\") : null;\r",
+									"\r",
+									"pm.test(\"[QUALITY] strict enum message (mock)\", () => {\r",
+									"  pm.expect(item).to.exist;\r",
+									"  pm.expect(item.message).to.eql(\"status is invalid; must be one of: active, inactive\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"qa_mock_num@example.com\",\r\n  \"gender\": \"male\",\r\n  \"status\": \"abc\"\r\n}"
+						},
+						"url": {
+							"raw": "{{mockBaseUrl}}/users",
+							"host": [
+								"{{mockBaseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MOCK: invalid status (number)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[STATUS] 422 (mock)\", () => pm.response.to.have.status(422));\r",
+									"\r",
+									"const errs = pm.response.json();\r",
+									"const item = Array.isArray(errs) ? errs.find(e => (e.field || \"\").toLowerCase() === \"status\") : null;\r",
+									"\r",
+									"pm.test(\"[QUALITY] strict enum message (mock)\", () => {\r",
+									"  pm.expect(item).to.exist;\r",
+									"  pm.expect(item.message).to.eql(\"status is invalid; must be one of: active, inactive\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"QA Portfolio User\",\r\n  \"email\": \"qa_mock_num@example.com\",\r\n  \"gender\": \"male\",\r\n  \"status\": 123\r\n}"
+						},
+						"url": {
+							"raw": "{{mockBaseUrl}}/users",
+							"host": [
+								"{{mockBaseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Purpose: Mock-based TDD for error-message quality on invalid `status`.  \nWe define a single 422 example for POST /users and assert STRICT equality against it.\n\nHow to use:  \n• Do NOT run the “DEF: … (example only)” item — it only holds the 422 example for the Mock.  \n• Run the requests here (string/number) against {{mockBaseUrl}}.  \n• Each test expects:\n\n- 422 status\n    \n- Response array with { field: \"status\", message: \"status is invalid; must be one of: active, inactive\" }\n    \n\nNotes:  \n• No Auth is required for the mock.  \n• Only one example is needed — both inputs map to the same desired response.  \n• This acts as a “future fix” definition (TDD) while the live API still returns a vaguer message.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "users_page1_ids",
+			"value": ""
+		},
+		{
+			"key": "uniqueEmail",
+			"value": ""
+		},
+		{
+			"key": "STRICT_ERROR_QUALITY",
+			"value": ""
+		}
+	]
+}
