@@ -1,0 +1,11 @@
+# Ignore local secrets
+postman/env/GoREST Local.secret.json
+
+# Ignore reports folder (Newman outputs)
+reports/
+
+# Ignore node_modules if you install npm packages
+node_modules/
+
+# Ignore log files
+*.log
