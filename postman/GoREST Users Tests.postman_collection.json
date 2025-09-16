@@ -1179,7 +1179,7 @@
 					"name": "Token",
 					"item": [
 						{
-							"name": "Create user - missing token - 422",
+							"name": "Create user - missing token - 401",
 							"event": [
 								{
 									"listen": "prerequest",
@@ -1241,7 +1241,7 @@
 							"response": []
 						},
 						{
-							"name": "Create user - token invalid - 422",
+							"name": "Create user - token invalid - 401",
 							"event": [
 								{
 									"listen": "prerequest",
@@ -1324,7 +1324,7 @@
 								"type": "text/javascript",
 								"packages": {},
 								"exec": [
-									"pm.test('[STATUS] code is 401 (Created)', () => {\r",
+									"pm.test('[STATUS] code is 401 (Unauthorized)', () => {\r",
 									"    pm.response.to.have.status(401);\r",
 									"});\r",
 									"\r",
