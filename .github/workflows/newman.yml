@@ -1,0 +1,37 @@
+name: Newman API tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  run-newman:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Newman (HTML + JUnit)
+        run: |
+          npx newman run "postman/collection/GoREST Users Tests.postman_collection.json" \
+            -e "postman/env/GoREST Local.postman_environment.json" \
+            --env-var token=${{ secrets.GOREST_TOKEN }} \
+            -r cli,htmlextra,junit \
+            --reporter-htmlextra-export reports/newman.html \
+            --reporter-junit-export reports/junit.xml \
+            --color on
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-reports
+          path: reports/
