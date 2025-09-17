@@ -25,6 +25,7 @@ jobs:
           npx newman run "postman/collection/GoREST Users Tests.postman_collection.json" \
             -e "postman/env/GoREST Local.postman_environment.json" \
             --env-var token=${{ secrets.GOREST_TOKEN }} \
+            --env-var mockBaseUrl=${{ secrets.MOCK_BASE_URL }} \
             -r cli,htmlextra,junit \
             --reporter-htmlextra-export reports/newman.html \
             --reporter-junit-export reports/junit.xml \
