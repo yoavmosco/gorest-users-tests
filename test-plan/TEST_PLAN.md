@@ -1,12 +1,20 @@
 # Test Plan — GoREST Users API (Postman)
 
+## 0. Assumptions & Versions
+- API base: `https://gorest.co.in/public/v2` (GoREST v2).
+- Tooling: Node 18.x, Newman 6.x, newman-reporter-htmlextra 1.x.
+- OS: Windows/Ubuntu (CI runs on `ubuntu-latest`).
+- Network: open internet access (required for GoREST API and Postman Mock Server).
+- Repo: no secrets are committed to version control; secrets (e.g., API token, mockBaseUrl) are injected via local environment or CI only.
+- Execution: tests can be run locally (Postman UI / Newman CLI) or automatically in CI (GitHub Actions workflow).
+
 ## 1. Objective
 Validate core behavior of the GoREST **Users** API using a Postman collection, ensuring:
 - CRUD happy-path works (create → read → update → delete → verify 404).
 - Robust error handling for 401/404/422.
 - Pagination behaves deterministically (no overlap between pages; invalid page falls back to page 1 item set).
 - Basic boundary checks (e.g., minimal name length).
-- Error message quality is clear and specific (not vague).  
+- Error message quality is clear and specific (not vague).
 - Error message quality validated against both the live API (observation mode) and a Postman Mock Server (Definition of Done, TDD strict baseline).
 
 ## 2. Scope
@@ -29,14 +37,19 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 - Request-level **assertions** per scenario.
 - Pagination tests compare **ID sets** across pages for strictness.
 - Negative tests assert **array-of-errors** shape for `422` and `{ message }` object for `401/404`.
-- Error quality tests (status invalid) run in TDD style — toggleable strictness.  
+- Error quality tests (status invalid) run in TDD style — toggleable strictness.
 - Mock Server defines the expected strict messages and serves as the TDD baseline, independent of live API behavior.
 
 ## 5. Environments & Data
 - `baseUrl = https://gorest.co.in/public/v2`
-- `token` must be provided locally in Postman (do not commit).
-- Unique email seeded via timestamp to avoid collisions, e.g., `qa_<timestamp>@example.com`.
-- Duplicate-email flow uses explicit **seed → duplicate → cleanup** sequence.
+- `token` — required locally and in CI, never committed to the repo.
+- `mockBaseUrl` — Postman Mock Server URL used for Error Quality (TDD) folder.
+- **Secret management**
+  - Local: `postman/env/GoREST Local.postman_environment.json` (do not commit real secrets).
+  - CI: `GOREST_TOKEN`, `MOCK_BASE_URL` (GitHub Actions secrets).
+- **Test data**
+  - Unique email per run: `qa_<timestamp>@example.com`.
+  - Deterministic duplicate-email flow: **seed (201) → duplicate (422) → cleanup (204)**.
 
 ## 6. Entry & Exit Criteria
 **Entry**
@@ -62,23 +75,38 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 3. **Boundary**: `name length = 1` → `201`.
 4. **Pagination**: `page=1` → `page=2` → `invalid page` (no data mutations).
 5. **Error Quality**: invalid `status` (string/number) → `422` with specific message.
-6. **Error Quality - Mock Server (TDD)**: `{{mockBaseUrl}}/users` — invalid `status` (string/number) → `422` with **specific** enum message (strict).
+6. **Error Quality — Mock Server (TDD)**: `{{mockBaseUrl}}/users` — invalid `status` (string/number) → `422` with **specific** enum message (strict).
+
 ### 7a. Flow Control
-- Certain reference requests (e.g., DEF requests) are **kept in the collection** for documentation/manual runs,  
-  but are **skipped automatically** during collection runs.  
-- Implemented via `pm.execution.setNextRequest()` to jump directly to the next relevant test.  
+- Certain reference requests (e.g., DEF requests) are **kept in the collection** for documentation/manual runs, but are **skipped automatically** during collection runs.
+- Implemented via `pm.execution.setNextRequest()` to jump directly to the next relevant test.
 - Purpose: maintain a clean automated run in Runner/Newman, while preserving useful reference requests in the repo.
 
+### 7b. CLI Profiles (Runner / Newman)
+- **Full**: All folders (default). Produces HTML report.
+- **Smoke**: `Happy Path`, `Negative`, `Boundary`, `Pagination` only — **no Mock**, with `--bail` enabled (fail fast).
+- **CI**: Full run with secrets injected; publishes HTML + JUnit as artifacts.
+  - Local shortcuts:
+    - `npm run test:api` → Full with HTML report.
+    - `npm run test:smoke` → Smoke subset, no Mock, `--bail`.
+
 ## 8. Risks & Mitigations
-- **Live public data may change** → schema kept light; strict comparisons restricted to pagination IDs.  
-- **Duplicate-email timing** → use deterministic seed/duplicate/cleanup flow.  
-- **Orphaned test data (leftover users)** → avoided by cleanup steps in Negative tests.  
-- **Auth rate limits or token expiry** → keep token fresh and avoid excessive runs.  
+- **Live public data may change** → schema kept light; strict comparisons limited to pagination IDs.
+- **Duplicate-email timing** → deterministic seed/duplicate/cleanup flow.
+- **Orphaned test data (leftover users)** → avoided via cleanup steps in Negative tests.
+- **Auth rate limits or token expiry** → keep token fresh; avoid excessive runs.
 - **Vague error messages in live API** → mitigated by Mock Server baseline (strict expected messages).
 
 ## 9. Reporting
-- Run history in Postman Collection Runner.
-- (Optional) Integrate with GitHub Actions for CI, publishing Newman HTML reports as build artifacts.
+- Postman Runner: run history for manual executions.
+- Newman:
+  - Console output (CLI).
+  - HTML (htmlextra) — saved to `reports/newman.html`.
+  - JUnit XML — saved to `reports/junit.xml` (for CI analytics).
+- CI (GitHub Actions):
+  - Triggers on every push/PR to `main`.
+  - **Artifacts**: `newman-reports` bundle with `newman.html` + `junit.xml` downloadable from each run.
+  - Live **status badge** shown in README.
 
 ## 10. Traceability Matrix (high-level)
 | Requirement / Rule | Covered By (Collection Folder / Request) |
@@ -90,7 +118,17 @@ Validate core behavior of the GoREST **Users** API using a Postman collection, e
 | 422 error array shape + field targeting | Negative (Email/Name/Gender/Status) |
 | 401/404 error object has `message` | Negative (Token, ID) |
 | Boundary: minimal name length accepted | Boundary / name length = 1 |
-| Pagination: page 1 caches IDs | Pagination / Page 1 |
+| Pagination: collect IDs for Page 1 | Pagination / Page 1 |
 | Pagination: page 2 has no overlap with page 1 | Pagination / Page 2 |
 | Invalid page falls back to page 1 set | Pagination / invalid page |
-| Error quality: invalid `status` has clear specific message (TDD) | Error Quality / status invalid (string, number) — Live API (observation/strict) + Mock Server (baseline) |
+| Error quality: invalid `status` has clear, specific message (TDD) | Error Quality / status invalid (string, number) — Live API (observation/strict) + Mock Server (baseline) |
+
+## 11. Automation & CI
+- **Local**:
+  - `npm run test:api` — full run with HTML report.
+  - `npm run test:smoke` — main subsets only (no Mock), with `--bail` enabled.
+- **CI (GitHub Actions)**:
+  - Runs on every push/PR to `main`.
+  - Secrets: `GOREST_TOKEN`, `MOCK_BASE_URL`.
+  - Artifacts: Newman HTML + JUnit reports available for download from each workflow run.
+  - Selective runs supported via CLI flags: `--folder` for subsets, `--bail folder` to stop early at folder level.

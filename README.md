@@ -144,8 +144,3 @@ findings/
 - [Test Plan](test-plan/TEST_PLAN.md)
 - [Test Cases](test-cases/TEST_CASES.md)
 - [Known Issues](findings/KNOWN_ISSUES.md)
-
-## Future Improvements
-- CI integration with Newman + HTML reports (GitHub Actions).  
-- Continuous documentation of new findings as API evolves.  
-
