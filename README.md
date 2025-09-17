@@ -13,7 +13,9 @@ Tests for GoREST **Users** API focusing on happy-path, negative, pagination (str
 ## How to run (Postman UI)
 1. Import collection: `postman/GoREST Users Tests.postman_collection.json`
 2. Import environment: `postman/env/GoREST Local.postman_environment.json`
-3. **Set environment variable:** `token` (insert your personal GoREST API token in Postman UI; never commit it to Git).
+3. **Set environment variables:**
+   - `token` → insert your personal GoREST API token (never commit it to Git).
+   - `mockBaseUrl` → insert your own Postman Mock Server URL (see [Mock-based TDD](#mock-based-tdd-postman-mock-server)).
    - `baseUrl` is already preconfigured in the environment file.
 4. Run folders:
    - Pagination: run page=1 → page=2 → invalid.
@@ -33,6 +35,9 @@ Runs the collection with your local **secret** environment and generates an HTML
 ```bash
 npm run test:api
 ```
+> Note: make sure to provide your own valid values in the environment file (`postman/env/GoREST Local.postman_environment.json`) before running:
+> - `token` → your personal GoREST API token
+> - `mockBaseUrl` → your Postman Mock Server URL
 
 ## Challenges & solutions
 - **Schema failed on 404**  
