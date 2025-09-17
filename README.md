@@ -20,6 +20,20 @@ Tests for GoREST **Users** API focusing on happy-path, negative, pagination (str
    - Negative / Email: **Seed (201)** → **Duplicate (422)** → **Cleanup (204)**.
    - Other 422 tests (missing/invalid format) are independent.
 
+## How to run (Newman CLI)
+This project also includes a ready-to-run Newman setup.
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v16+)
+- Run `npm install` in the project root to install `newman` and `newman-reporter-htmlextra`.
+
+### Run Locally
+Runs the collection with your local **secret** environment and generates an HTML report:
+
+```bash
+npm run test:api
+```
+
 ## Challenges & solutions
 - **Schema failed on 404**  
   *Fix:* schema guard — run only on **2xx JSON**. For the delete-verify step, assert **404 + message** without schema.

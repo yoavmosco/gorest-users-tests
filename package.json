@@ -1,0 +1,24 @@
+{
+  "name": "gorest-users-tests",
+  "version": "1.0.0",
+  "description": "Tests for GoREST **Users** API focusing on happy-path, negative, pagination (strict), boundary, and error-message quality.",
+  "main": "index.js",
+"scripts": {
+  "test:api": "newman run \"postman/collection/GoREST Users Tests.postman_collection.json\" -e \"postman/env/GoREST Local.secret.json\" -r cli,htmlextra --reporter-htmlextra-export reports/newman.html --color on"
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoavmosco/gorest-users-tests.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yoavmosco/gorest-users-tests/issues"
+  },
+  "homepage": "https://github.com/yoavmosco/gorest-users-tests#readme",
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
