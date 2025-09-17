@@ -1,6 +1,6 @@
 # GoREST – Users API Tests (Postman)
 
-![Newman API tests](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml/badge.svg)
+[![Newman API tests](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml/badge.svg)](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml)
 
 Tests for GoREST **Users** API focusing on happy-path, negative, pagination (strict), boundary, and error-message quality.
 
