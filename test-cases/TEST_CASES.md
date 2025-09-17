@@ -2,6 +2,11 @@
 
 > IDs are suggestions; keep titles short and human-readable. Steps assume the Postman collection/environment provided in this repo.
 
+## Environment Notes
+- `token` — required for all live API tests (local Postman / CI secret `GOREST_TOKEN`).
+- `mockBaseUrl` — required for the *Mock Server (TDD)* folder (local / CI secret `MOCK_BASE_URL`).
+- `STRICT_ERROR_QUALITY` — optional flag; when enabled, Error Quality tests fail unless messages are explicit about allowed enum values.
+
 ## Happy Path
 | ID | Title | Pre-conditions | Steps | Expected |
 |---|---|---|---|---|
@@ -67,13 +72,15 @@
 ## Error Quality
 | ID | Title | Pre-conditions | Steps | Expected |
 |---|---|---|---|---|
-| TC-EQ-01 | Create user — status invalid (string) — 422 | Valid `token`, unique `email` | POST with `status="abc"` | 422; error **array** includes `field=status`; message ideally specific (e.g., “invalid / must be one of …”) |
-| TC-EQ-02 | Create user — status invalid (number) — 422 | Valid `token`, unique `email` | POST with `status=123` | 422; error **array** includes `field=status`; message ideally specific (e.g., “invalid / must be one of …”) |
+| TC-EQ-01 | Create user — status invalid (string) — 422 | Valid `token`, unique `email` | POST with `status="abc"` | 422; error **array** includes `field=status`; message explicitly lists allowed values (e.g., “must be one of: active, inactive”) |
+| TC-EQ-02 | Create user — status invalid (number) — 422 | Valid `token`, unique `email` | POST with `status=123` | 422; error **array** includes `field=status`; message explicitly lists allowed values (e.g., “must be one of: active, inactive”) |
 
-> Note: Specificity check is **toggleable** with `STRICT_ERROR_QUALITY=true` (env/collection) — when enabled, tests fail unless the message is explicit about allowed enum values.
+> Note: Specificity check is **toggleable** with `STRICT_ERROR_QUALITY=true` — when enabled, these tests fail unless the message explicitly enumerates valid values.
 
 ## Error Quality - Mock Server (TDD)
 | ID       | Title | Pre-conditions        | Steps | Expected |
 |----------|-------|-----------------------|-------|----------|
-| TC-MK-01 | MOCK: invalid status (string) | `mockBaseUrl` set | POST `{{mockBaseUrl}}/users` with `status="abc"` | 422; error array includes `field=status`; message specific (enum) |
-| TC-MK-02 | MOCK: invalid status (number) | `mockBaseUrl` set | POST `{{mockBaseUrl}}/users` with `status=123` | 422; error array includes `field=status`; message specific (enum) |
+| TC-MK-01 | MOCK: invalid status (string) | `mockBaseUrl` set | POST `{{mockBaseUrl}}/users` with `status="abc"` | 422; error array includes `field=status`; message specific (enum baseline) |
+| TC-MK-02 | MOCK: invalid status (number) | `mockBaseUrl` set | POST `{{mockBaseUrl}}/users` with `status=123` | 422; error array includes `field=status`; message specific (enum baseline) |
+
+> These Mock Server tests serve as the **Definition of Done baseline** — they always expect strict messages, independent of the live API’s current behavior.
