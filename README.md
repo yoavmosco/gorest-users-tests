@@ -1,5 +1,7 @@
 # GoREST – Users API Tests (Postman)
 
+![Newman API tests](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml/badge.svg)
+
 Tests for GoREST **Users** API focusing on happy-path, negative, pagination (strict), boundary, and error-message quality.
 
 ## What’s covered
@@ -38,6 +40,19 @@ npm run test:api
 > Note: make sure to provide your own valid values in the environment file (`postman/env/GoREST Local.postman_environment.json`) before running:
 > - `token` → your personal GoREST API token
 > - `mockBaseUrl` → your Postman Mock Server URL
+
+## CI – GitHub Actions (Newman)
+Status: ![Newman API tests](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml/badge.svg)
+
+On every push/PR to `main`, the workflow runs `newman` with HTML and JUnit reports:
+- Secrets used: `GOREST_TOKEN` (GoREST API token), `MOCK_BASE_URL` (Postman Mock URL).
+- Artifacts: `newman-reports` → contains `reports/newman.html` and `reports/junit.xml`.
+
+**How to download reports:**  
+Go to **Actions → Newman API tests → latest run → Artifacts → newman-reports** and download the ZIP.
+
+### Report preview
+![Newman HTML Report](docs/newman-report.png)
 
 ## Challenges & solutions
 - **Schema failed on 404**  
