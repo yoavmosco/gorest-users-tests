@@ -41,6 +41,40 @@ npm run test:api
 > - `token` → your personal GoREST API token
 > - `mockBaseUrl` → your Postman Mock Server URL
 
+### Running specific folders
+Useful when you want to run only a subset (e.g., skip mocks):
+```bash
+npx newman run "postman/collection/GoREST Users Tests.postman_collection.json" \
+  -e "postman/env/GoREST Local.postman_environment.json" \
+  --folder "Pagination" \
+  --folder "Negative"
+```
+
+### Fail-fast (bail)  
+Stop early when failures occur:
+
+```bash
+# Stop on the first failing request/test
+npx newman run "postman/collection/GoREST Users Tests.postman_collection.json" \
+  -e "postman/env/GoREST Local.postman_environment.json" \
+  --bail
+```
+
+```bash
+# Stop when the first folder fails (continue within a folder, but stop when a folder overall fails)
+npx newman run "postman/collection/GoREST Users Tests.postman_collection.json" \
+  -e "postman/env/GoREST Local.postman_environment.json" \
+  --bail folder
+```
+
+### npm scripts
+For convenience, the project defines two ready-to-run npm scripts:
+
+- `npm run test:api` → full run with HTML report (htmlextra).
+- `npm run test:smoke` → quick “smoke run” of core folders (Happy Path, Negative, Boundary, Pagination), skipping mocks, with `--bail`.
+
+> These are defined in `package.json` under `"scripts"`, so anyone can run them without remembering long Newman commands.
+
 ## CI – GitHub Actions (Newman)
 Status: ![Newman API tests](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml/badge.svg)
 

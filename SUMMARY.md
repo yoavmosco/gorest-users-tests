@@ -47,6 +47,23 @@ README.md
 - **Error Quality (Enum fields):** clarity of messages for invalid `status` (TDD approach, toggleable strictness).  
 - **Mock Server (TDD):** strict reference for expected error messages, independent of live API.
 - **Flow Control:** selective skipping via `pm.execution.setNextRequest` to demonstrate complex run logic.
+- **CI Integration:** automated Newman runs on GitHub Actions with live status badge + downloadable reports.
+
+---
+
+## Automation & CI
+
+- **Newman CLI** — full collection runs with HTML reports (`newman-reporter-htmlextra`).
+- **npm scripts** — shortcuts for local runs:
+  - `npm run test:api` (full with report)
+  - `npm run test:smoke` (smoke subset, no mocks, with bail)
+- **Selective runs** — ability to run only specific folders (`--folder Pagination`, `--folder Negative`).
+- **Fail-fast option** — stop on first failure (`--bail`) or stop when a folder fails (`--bail folder`).
+- **GitHub Actions CI**  
+  - Runs Newman on every push/PR to `main`.  
+  - Secrets managed via GitHub Actions (`GOREST_TOKEN`, `MOCK_BASE_URL`).  
+  - Artifacts: downloadable Newman HTML report + JUnit XML.  
+- **Badge in README** — live status of CI runs (passing/failing).
 
 ---
 
