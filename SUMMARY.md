@@ -59,6 +59,9 @@ README.md
   - `npm run test:smoke` (smoke subset, no mocks, with bail)
 - **Selective runs** — ability to run only specific folders (`--folder Pagination`, `--folder Negative`).
 - **Fail-fast option** — stop on first failure (`--bail`) or stop when a folder fails (`--bail folder`).
+- **Docker** — optional containerized run for consistency:
+  - Build: `docker build -t gorest-tests .`
+  - Run: `docker run --rm -e TOKEN=... -v "$PWD/reports:/app/reports" gorest-tests`
 - **GitHub Actions CI**  
   - Runs Newman on every push/PR to `main`.  
   - Secrets managed via GitHub Actions (`GOREST_TOKEN`, `MOCK_BASE_URL`).  
@@ -80,7 +83,7 @@ This project illustrates:
 - ✅ Professional test design (traceability, separation of plan/cases/findings).  
 - ✅ API testing with **Postman assertions + environment data**.  
 - ✅ Awareness of real-world issues (public API flakiness, vague error messages).  
-- ✅ CI/CD readiness (Newman CLI, GitHub Actions optional).  
+- ✅ CI/CD readiness (Newman CLI, GitHub Actions optional, Docker optional).  
 - ✅ TDD thinking via **Mock Server baseline** for strict error validation.  
 
 ---
