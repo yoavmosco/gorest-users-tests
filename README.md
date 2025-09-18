@@ -75,6 +75,30 @@ For convenience, the project defines two ready-to-run npm scripts:
 
 > These are defined in `package.json` under `"scripts"`, so anyone can run them without remembering long Newman commands.
 
+## Run with Docker (no local Node required)
+
+Build the image once:
+
+```bash
+docker build -t gorest-tests .
+```
+
+Run (PowerShell on Windows):
+
+```powershell
+docker run --rm `
+  -e TOKEN="YOUR_GOREST_TOKEN" `
+  -e MOCK_BASE_URL="https://<your-mock-id>.mock.pstmn.io" `
+  -v "${PWD}\reports:/app/reports" `
+  gorest-tests
+```
+
+Run (macOS/Linux/Git Bash):
+
+```bash
+docker run --rm   -e TOKEN="YOUR_GOREST_TOKEN"   -e MOCK_BASE_URL="https://<your-mock-id>.mock.pstmn.io"   -v "$PWD/reports:/app/reports"   gorest-tests
+```
+
 ## CI – GitHub Actions (Newman)
 Status: ![Newman API tests](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml/badge.svg)
 
