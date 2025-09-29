@@ -1,0 +1,17 @@
+# Node modules (installed fresh in container if needed)
+node_modules
+npm-debug.log
+
+# Local Postman secrets (never bake into image)
+postman/env/GoREST Local.secret.json
+
+# Reports (they are generated dynamically, no need to copy in)
+reports
+
+# Git files
+.git
+.gitignore
+
+# OS/editor junk
+.DS_Store
+.vscode
