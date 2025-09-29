@@ -1,4 +1,4 @@
-# GoREST Users API — QA Portfolio Summary
+# API Testing & Automation Project — Summary
 
 This repository demonstrates **API test design & execution** for the public [GoREST Users API](https://gorest.co.in).  
 It is part of a QA portfolio project to showcase structured **manual + Postman automation** skills.

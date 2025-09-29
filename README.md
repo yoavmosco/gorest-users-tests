@@ -1,4 +1,4 @@
-# GoREST – Users API Tests (Postman)
+# API Testing & Automation Project (GoREST public API)
 
 [![Newman API tests](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml/badge.svg)](https://github.com/yoavmosco/gorest-users-tests/actions/workflows/newman.yml)
 
